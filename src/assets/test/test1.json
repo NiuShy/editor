@@ -1,0 +1,13 @@
+{
+  "aaa": 4444,
+  "bbb": [
+    {
+      "text": "custom icon",
+      "icon": "fa fa-warning icon-state-warning"
+    },
+    {
+      "text": "disabled node",
+      "icon": "fa fa-check icon-state-success"
+    }
+  ]
+}
