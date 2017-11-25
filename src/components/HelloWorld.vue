@@ -4,7 +4,7 @@
       <div   class="head-left">
       </div>
       <div   class="head-right">
-        <label>时间都拿手机的</label>
+        <label>Json编辑器</label>
         <button class="icon-btn">
           <i class=" fa fa-save"  ></i>
         </button>
@@ -22,7 +22,7 @@
         <iframe style="width: 100%;height: 100%;border: none;" src="https://m.baidu.com"></iframe>
       </div>
       <div class="tree-view" id="tree">
-        <v-jstree :data="treeData" wholeRow  ></v-jstree>
+        <v-jstree :data="treeData" wholeRow @item-click="itemClick"></v-jstree>
       </div>
       <div class="editor-view" id="editor">
         <json-editor v-model="json"  height="100%" lang="json" theme="monokai" @init="initEditor"></json-editor>
@@ -38,70 +38,20 @@ import 'font-awesome/css/font-awesome.css'
 import JsonEditor from  "vue2-ace-editor"
 import VJstree from 'vue-jstree'
 import Split from 'split.js'
+import { Base64 } from 'js-base64'
+import _ from "lodash"
+
 export default {
   name: 'HelloWorld',
   data () {
     return {
-      json:JSON.stringify({
-          "aaa":4444,
-        "bbb":[
-          {
-            "text": "custom icon",
-            "icon": "fa fa-warning icon-state-warning"
-          },
-          {
-            "text": "disabled node",
-            "icon": "fa fa-check icon-state-success",
-          }
-        ]
-      },null, 4),
-      treeData:[
-          {
-            "text": "Same but with checkboxesSame but with checkboxesSame but with checkboxes",
-            "icon":"fa fa-folder-o",
-            "opened":true,
-            "children": [
-              {
-                "text": "initially selected",
-                "icon":"fa fa-file-text-o",
-              },{
-                "text": "initially selected",
-                "icon":"fa fa-file-text-o",
-              },
-              {
-                "text": "custom icon",
-                "icon": "fa fa-file-text-o"
-              },
-              {
-                "text": "initially open",
-                "icon": "fa fa-folder-o",
-                "opened":true,
-                "children": [
-                  {
-                    "text": "Another node",
-                    "icon":"fa fa-file-text-o",
-                  }
-                ]
-              },
-              {
-                "text": "custom icon",
-                "icon":"fa fa-file-text-o"
-              },
-              {
-                "text": "disabled node",
-                "icon": "fa fa-file-text-o",
-              }
-            ]
-          }]
-
-
+      gitUrl:"https://api.github.com/repos/NiuShy/editor/contents/",
+      json:"",
+      treeData:[]
     }
   },
   created:function(){
-    this.axios.get("https://api.github.com/repos/NiuShy/editor/contents")
-            .then(function(response) {
-              console.log(response.data);
-            });
+      this.loadTreeNode();
 
 
   },
@@ -109,7 +59,61 @@ export default {
     initEditor:function (editor) {
       require('brace/mode/json');
       require('brace/theme/monokai');
+    },
+    itemClick:function(node,item){
+
+      this.loadTreeNode(node,item);
+
+    },
+    loadTreeNode:function(node,item){
+      var this_ = this;
+
+      var treeDataTmp = [];
+      if(!item){
+        this_.axios.get(this_.gitUrl)
+          .then(function(response) {
+            var index = 0;
+            treeDataTmp = response.data.map(function(item){
+              item.text = item.name;
+              item.icon = "fa fa-folder-o";
+              if(item.type == 'file'){
+                item.icon = "fa fa-file-text-o";
+
+              }
+              item.opened = true;
+              item.index = index++;
+              return item;
+            })
+            this_.treeData = treeDataTmp;
+
+          }).catch(function(e){
+              alert(e)
+        });
+      }else{
+        this_.axios.get(this_.gitUrl+item.path)
+          .then(function(response) {
+            if(response.data){
+              if(item.type== "dir"){
+                var list = response.data.map(function(item){
+                  item.text = item.name;
+                  item.icon = "fa fa-folder-o";
+                  if(item.type == 'file'){
+                    item.icon = "fa fa-file-text-o";
+                  }
+                  item.opened = true;
+                  return item;
+                });
+
+                this_.$set(item,"children",list);
+              }else{
+                this_.json = Base64.decode(response.data.content)
+              }
+            }
+          });
+      }
     }
+
+
   },
   mounted:function(){
     Split(['#tree', '#editor'], {

@@ -12,6 +12,8 @@
   "dependencies": {
     "axios": "^0.17.1",
     "font-awesome": "^4.7.0",
+    "js-base64": "^2.3.2",
+    "lodash": "^4.17.4",
     "split.js": "^1.3.5",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
