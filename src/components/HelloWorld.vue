@@ -22,7 +22,7 @@
         <iframe style="width: 100%;height: 100%;border: none;" src="https://m.baidu.com"></iframe>
       </div>
       <div class="tree-view" id="tree">
-        <v-jstree :data="treeData" wholeRow @item-click="itemClick"></v-jstree>
+        <v-jstree :data="treeData" wholeRow @item-click="itemClick"  :multiple="false"   ref='tree'></v-jstree>
       </div>
       <div class="editor-view" id="editor">
         <json-editor v-model="json"  height="100%" lang="json" theme="monokai" @init="initEditor"></json-editor>
@@ -50,11 +50,7 @@ export default {
       treeData:[]
     }
   },
-  created:function(){
-      this.loadTreeNode();
 
-
-  },
   methods:{
     initEditor:function (editor) {
       require('brace/mode/json');
@@ -62,34 +58,33 @@ export default {
     },
     itemClick:function(node,item){
 
-      this.loadTreeNode(node,item);
+     this.loadTreeNode(node,item);
 
     },
+
     loadTreeNode:function(node,item){
       var this_ = this;
-
-      var treeDataTmp = [];
       if(!item){
         this_.axios.get(this_.gitUrl)
           .then(function(response) {
-            var index = 0;
-            treeDataTmp = response.data.map(function(item){
+
+            var list = response.data.map(function(item){
               item.text = item.name;
               item.icon = "fa fa-folder-o";
               if(item.type == 'file'){
                 item.icon = "fa fa-file-text-o";
-
               }
               item.opened = true;
-              item.index = index++;
               return item;
             })
-            this_.treeData = treeDataTmp;
+
+            this_.treeData = list;
 
           }).catch(function(e){
               alert(e)
-        });
+          });
       }else{
+
         this_.axios.get(this_.gitUrl+item.path)
           .then(function(response) {
             if(response.data){
@@ -105,12 +100,29 @@ export default {
                 });
 
                 this_.$set(item,"children",list);
+                this_.handleSelected(this_.$refs.tree.model,node)
               }else{
+                this_.handleSelected(this_.$refs.tree.model,node)
                 this_.json = Base64.decode(response.data.content)
               }
             }
           });
+
       }
+    },
+    /**
+     * 解决树形插件选择问题
+     */
+    handleSelected:function(data,item){
+      if (data.children && data.children.length > 0) {
+        for (let childNode of data.children) {
+          if (!childNode.disabled) {
+            childNode.model.selected= false
+            this.handleSelected(childNode)
+          }
+        }
+      }
+      item.model.selected= true;
     }
 
 
@@ -119,6 +131,7 @@ export default {
     Split(['#tree', '#editor'], {
       sizes: [25, 75]
     })
+    this.loadTreeNode();
   },
   components: {
     VJstree,
@@ -198,7 +211,7 @@ export default {
 .mri-content .editor-view{
   /*flex: 2;*/
 }
-  .gutter.gutter-horizontal{
+.gutter.gutter-horizontal{
     border: none;
     cursor: w-resize;
   }
