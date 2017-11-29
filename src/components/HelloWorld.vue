@@ -2,18 +2,30 @@
   <div class="mri-warp">
     <div class="content-head">
       <div   class="head-left">
+        <el-select v-model="value6" placeholder="请选择">
+          <el-option
+                  v-for="item in cities"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value" style="height: 50px;">
+            <span  >{{ item.label }}</span><br>
+            <span style="  color: #8492a6; font-size: 13px">{{ item.value }}</span>
+          </el-option>
+        </el-select>
       </div>
       <div   class="head-right">
         <label>Json编辑器</label>
-        <button class="icon-btn">
-          <i class=" fa fa-save"  ></i>
-        </button>
-        <button class="icon-btn">
-          <i class=" fa fa-save"  ></i>
-        </button>
-        <button class="icon-btn">
-          <i class=" fa fa-save"  ></i>
-        </button>
+        <el-button-group style="float: right;" >
+          <el-tooltip class="item" effect="light" content="保存" placement="top-start">
+            <el-button type="primary" size="small" >
+              <i class="fa fa-save"></i>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="保存" placement="top-start">
+            <el-button type="primary" size="small" icon="share"></el-button>
+          </el-tooltip>
+          <el-button type="primary" size="small" icon="delete"></el-button>
+        </el-button-group>
 
       </div>
     </div>
@@ -47,11 +59,49 @@ export default {
     return {
       gitUrl:"https://api.github.com/repos/NiuShy/editor/contents/",
       json:"",
-      treeData:[]
+      treeData:[],
+      cities: [{
+        value: '000000001',
+        label: '测试用户01'
+      }, {
+        value: '000000001',
+        label: '测试用户01'
+      }, {
+        value: '000000001000000001000000001',
+        label: '测试用户01'
+      }, {
+        value: '000000001',
+        label: '测试用户01'
+      }, {
+        value: '000000001',
+        label: '测试用户01'
+      }, {
+        value: '000000001',
+        label: '测试用户01'
+      }],
+      value6: ''
     }
   },
-
+  mounted() {
+    this.list = this.states.map(item => {
+              return { value: item, label: item };
+    });
+  },
   methods:{
+    remoteMethod(query) {
+      if (query !== '') {
+        this.loading = true;
+        setTimeout(() => {
+          this.loading = false;
+        this.options4 = this.list.filter(item => {
+                  return item.label.toLowerCase()
+                          .indexOf(query.toLowerCase()) > -1;
+      });
+      }, 200);
+      } else {
+        this.options4 = [];
+      }
+    },
     initEditor:function (editor) {
       require('brace/mode/json');
       require('brace/theme/monokai');
@@ -140,7 +190,7 @@ export default {
 }
 </script>
 
-<style >
+<style  >
 .mri-content{
   height: 700px;
   display: flex;
