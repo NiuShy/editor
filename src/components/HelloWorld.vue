@@ -1,8 +1,8 @@
 <template>
   <div class="mri-warp">
     <div class="content-head">
-      <div   class="head-left">
-        <el-select v-model="value6" placeholder="请选择">
+      <div   class="head-left"  >
+        <el-select v-model="value6" placeholder="请选择" size="small" style=" width: calc(100% - 180px);padding: 3px;">
           <el-option
                   v-for="item in cities"
                   :key="item.value"
@@ -12,10 +12,36 @@
             <span style="  color: #8492a6; font-size: 13px">{{ item.value }}</span>
           </el-option>
         </el-select>
+
+        <el-button-group style="float: right;padding-right: 15px" class="btns" >
+          <el-tooltip class="item" effect="light" content="停止" placement="top-start">
+            <el-button type="primary" size="small" >
+              <i class="fa fa-save"></i>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="启动" placement="top-start">
+            <el-button type="primary" size="small" icon="share"></el-button>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="事件" placement="top-start">
+            <el-button type="primary" size="small" >
+              <i class="fa fa-save"></i>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="重载" placement="top-start">
+            <el-button type="primary" size="small" >
+              <i class="fa fa-save"></i>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="收起" placement="top-start" >
+            <el-button type="primary" size="small" v-on:click="packUp()">
+              <i class="fa fa-save"></i>
+            </el-button>
+          </el-tooltip>
+        </el-button-group>
       </div>
       <div   class="head-right">
         <label>Json编辑器</label>
-        <el-button-group style="float: right;" >
+        <el-button-group style="float: right;" class="btns" >
           <el-tooltip class="item" effect="light" content="保存" placement="top-start">
             <el-button type="primary" size="small" >
               <i class="fa fa-save"></i>
@@ -30,17 +56,32 @@
       </div>
     </div>
     <div class="mri-content">
-      <div class="mri-view" id="mri">
-        <iframe style="width: 100%;height: 100%;border: none;" src="https://m.baidu.com"></iframe>
+
+      <transition name="slide">
+      <div class="mri-view" id="mri" v-show="!isPackUp"  transiton="slide">
+        <iframe style="width: 100%;height: 100%;border: none;" :src="mriUrl"></iframe>
       </div>
+      </transition>
       <div class="tree-view" id="tree">
-        <v-jstree :data="treeData" wholeRow @item-click="itemClick"  :multiple="false"   ref='tree'></v-jstree>
+        <v-jstree :data="treeData" wholeRow @item-click="itemClick"  ref='tree'></v-jstree>
       </div>
       <div class="editor-view" id="editor">
         <json-editor v-model="json"  height="100%" lang="json" theme="monokai" @init="initEditor"></json-editor>
       </div>
     </div>
+    <div class="content-head">
+      <div   class="head-left"  >
+        <el-date-picker
+                v-model="sysTime"
+                type="datetime"
+                :editable=editable
+                placeholder="选择日期时间">
+        </el-date-picker>
 
+        <label class="version"  >V1.0 </label>
+      </div>
+      <div   class="head-right"  ></div>
+    </div>
 
   </div>
 </template>
@@ -48,15 +89,18 @@
 <script>
 import 'font-awesome/css/font-awesome.css'
 import JsonEditor from  "vue2-ace-editor"
-import VJstree from 'vue-jstree'
+import VJstree from './tree-view/tree.vue'
 import Split from 'split.js'
 import { Base64 } from 'js-base64'
-import _ from "lodash"
 
 export default {
   name: 'HelloWorld',
   data () {
     return {
+      sysTime:"2017-11-11 00:00:00",
+      editable:false,
+      isPackUp:false,
+      mriUrl:"http://sibbay-mri-wept.oss-cn-hangzhou.aliyuncs.com/#!pages/mri-and-menu/mri/mri?userid=000000000000000000000001&server_url=http://101.37.115.57:19999",
       gitUrl:"https://api.github.com/repos/NiuShy/editor/contents/",
       json:"",
       treeData:[],
@@ -88,6 +132,9 @@ export default {
     });
   },
   methods:{
+    packUp(){
+      this.isPackUp =!this.isPackUp;
+    },
     remoteMethod(query) {
       if (query !== '') {
         this.loading = true;
@@ -107,9 +154,7 @@ export default {
       require('brace/theme/monokai');
     },
     itemClick:function(node,item){
-
      this.loadTreeNode(node,item);
-
     },
 
     loadTreeNode:function(node,item){
@@ -150,9 +195,9 @@ export default {
                 });
 
                 this_.$set(item,"children",list);
-                this_.handleSelected(this_.$refs.tree.model,node)
+                this_.handleSelected(this_.$refs.tree,node)
               }else{
-                this_.handleSelected(this_.$refs.tree.model,node)
+                this_.handleSelected(this_.$refs.tree,node)
                 this_.json = Base64.decode(response.data.content)
               }
             }
@@ -164,15 +209,19 @@ export default {
      * 解决树形插件选择问题
      */
     handleSelected:function(data,item){
-      if (data.children && data.children.length > 0) {
-        for (let childNode of data.children) {
+      if (data.$children && data.$children.length > 0) {
+        for (let childNode of data.$children) {
           if (!childNode.disabled) {
-            childNode.model.selected= false
-            this.handleSelected(childNode)
+            childNode.$set(childNode.model,"selected",false);
+            childNode.data.selected = false;
+            childNode.model.selected = false;
+            childNode.isHover=false;
+            this.handleSelected(childNode,item)
           }
         }
+        item.$set(item.model,"selected",true);
+        //item.data.selected = true;
       }
-      item.model.selected= true;
     }
 
 
@@ -196,7 +245,7 @@ export default {
   display: flex;
 }
 .mri-warp .content-head{
-  height: 30px;
+  height: 36px;
   padding: 5px;
   border-radius: 4px;
   border: 1px solid #e6ebf5;
@@ -209,6 +258,12 @@ export default {
 .mri-warp .content-head .head-right{
   width: calc(100% - 70px);
  }
+.mri-warp .content-head .head-right label{
+  line-height: 36px;
+}
+.mri-warp .content-head  .btns{
+  padding: 5px;
+}
 .mri-warp .content-head .head-right .icon-btn{
   float: right;
   color: #fff;
@@ -264,5 +319,23 @@ export default {
 .gutter.gutter-horizontal{
     border: none;
     cursor: w-resize;
+  }
+.slide-enter-active {
+  animation: slide-in .5s linear  reverse;
+}
+.slide-leave-active {
+  animation: slide-in .5s linear ;
+}
+@keyframes slide-in {
+  0% {
+    margin-left: 0px;
+  }
+  100% {
+    margin-left: -420px;
+  }
+}
+
+  .version{
+    margin-left: 10px;float:right;line-height: 36px;
   }
 </style>
