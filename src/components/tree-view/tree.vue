@@ -43,10 +43,12 @@
       loadingText: {type: String, default: 'Loading...'},
       draggable: {type: Boolean, default: false},
       klass: String
+
     },
     data () {
       return {
-        draggedItem: null
+        draggedItem: null,
+        lastNode:null
       }
     },
     computed: {
@@ -120,6 +122,7 @@
         }
       },
       onItemClick (oriNode, oriItem) {
+
         if (this.multiple) {
             if (this.allowBatch) {
                 this.handleBatchSelectItems(oriNode, oriItem)
@@ -130,10 +133,16 @@
         this.$emit('item-click', oriNode, oriItem)
       },
       handleSingleSelectItems (oriNode, oriItem) {
-        this.handleRecursionNodeChilds(this, node => {
+        if(this.lastNode){
+          this.lastNode.data.selected = false
+        }
+          oriNode.model.selected = true
+          this.lastNode = oriNode;
+
+        /*this.handleRecursionNodeChilds(this, node => {
           node.model.selected = false
-        })
-        oriNode.model.selected = true
+        })*/
+        //oriNode.model.selected = true
       },
       handleBatchSelectItems (oriNode, oriItem) {
         this.handleRecursionNodeChilds(oriNode, node => {

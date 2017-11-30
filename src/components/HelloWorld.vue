@@ -222,7 +222,6 @@ export default {
               alert(e)
           });
       }else{
-
         this_.axios.get(this_.gitUrl+item.path)
           .then(function(response) {
             if(response.data){
@@ -238,36 +237,14 @@ export default {
                 });
 
                 this_.$set(item,"children",list);
-                this_.handleSelected(this_.$refs.tree,node)
               }else{
-                this_.handleSelected(this_.$refs.tree,node)
                 this_.json = Base64.decode(response.data.content)
               }
             }
           });
 
       }
-    },
-    /**
-     * 解决树形插件选择问题
-     */
-    handleSelected:function(data,item){
-      if (data.$children && data.$children.length > 0) {
-        for (let childNode of data.$children) {
-          if (!childNode.disabled) {
-            childNode.$set(childNode.model,"selected",false);
-            childNode.data.selected = false;
-            childNode.model.selected = false;
-            childNode.isHover=false;
-            this.handleSelected(childNode,item)
-          }
-        }
-        item.$set(item.model,"selected",true);
-        //item.data.selected = true;
-      }
     }
-
-
   },
   mounted:function(){
     Split(['#tree', '#editor'], {
