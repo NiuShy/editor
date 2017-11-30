@@ -9,32 +9,34 @@
                   :label="item.label"
                   :value="item.value" style="height: 50px;">
             <span  >{{ item.label }}</span><br>
-            <span style="  color: #8492a6; font-size: 13px">{{ item.value }}</span>
+            <span style="font-size: 13px">{{ item.value }}</span>
           </el-option>
         </el-select>
 
         <el-button-group style="float: right;padding-right: 15px" class="btns" >
           <el-tooltip class="item" effect="light" content="停止" placement="top-start">
             <el-button type="primary" size="small" >
-              <i class="fa fa-save"></i>
+              <i class="fa fa-stop"></i>
             </el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="light" content="启动" placement="top-start">
-            <el-button type="primary" size="small" icon="share"></el-button>
+            <el-button type="primary" size="small">
+              <i class="fa fa-play"></i>
+            </el-button>
           </el-tooltip>
-          <el-tooltip class="item" effect="light" content="事件" placement="top-start">
-            <el-button type="primary" size="small" >
-              <i class="fa fa-save"></i>
+          <el-tooltip class="item" effect="light" content="事件" placement="top-start" >
+            <el-button type="primary" size="small" @click="dialogFormVisible = true">
+              <i class="fa fa-flash"></i>
             </el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="light" content="重载" placement="top-start">
             <el-button type="primary" size="small" >
-              <i class="fa fa-save"></i>
+              <i class="fa fa-refresh"></i>
             </el-button>
           </el-tooltip>
-          <el-tooltip class="item" effect="light" content="收起" placement="top-start" >
+          <el-tooltip class="item" effect="light" :content="isPackUp?'展开':'收起'" placement="top-start" >
             <el-button type="primary" size="small" v-on:click="packUp()">
-              <i class="fa fa-save"></i>
+              <i :class="isPackUp?'el-icon-arrow-right':'el-icon-arrow-left'"></i>
             </el-button>
           </el-tooltip>
         </el-button-group>
@@ -83,6 +85,31 @@
       <div   class="head-right"  ></div>
     </div>
 
+
+    <el-dialog title="事件" :visible.sync="dialogFormVisible">
+        <el-button type="primary" @click="showEventEdit = true" style="float: right;margin-bottom: 10px;">添加事件</el-button>
+        <el-table :data="eventList" v-show="!showEventEdit">
+          <el-table-column property="name" label="事件名称"  ></el-table-column>
+          <el-table-column label="操作">
+            <template scope="scope">
+              <el-button size="small" icon="caret-left">发送</el-button>
+              <el-button size="small" icon="edit" @click="showEventEdit = true">编辑</el-button>
+              <el-button size="small" type="danger" icon="delete">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div v-show="showEventEdit">
+          <el-input v-model="eventName" placeholder="请输入事件名称" style="margin-bottom: 20px"></el-input>
+          <json-editor v-model="eventJson"  height="200px" lang="json" theme="monokai" @init="initEditor"></json-editor>
+        </div>
+
+      <div slot="footer" class="dialog-footer" v-show="showEventEdit">
+        <el-button @click="showEventEdit = false">取 消</el-button>
+        <el-button type="primary" @click="showEventEdit = false">确 定</el-button>
+      </div>
+    </el-dialog>
+
+
   </div>
 </template>
 
@@ -97,6 +124,21 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
+
+      eventJson:JSON.stringify({"event": {"uri": "","data": {}}},null,'\t'),
+      showEventEdit:false,
+      eventName:"",
+      eventList:[
+        {id:1,name:"事件1"},
+        {id:2,name:"事件1"},
+        {id:3,name:"事件1"},
+        {id:4,name:"事件1"},
+        {id:5,name:"事件1"},
+        {id:6,name:"事件1"},
+        {id:7,name:"事件1"}
+      ],
+      dialogFormVisible: false,
+      formLabelWidth: '500px',
       sysTime:"2017-11-11 00:00:00",
       editable:false,
       isPackUp:false,
@@ -108,24 +150,25 @@ export default {
         value: '000000001',
         label: '测试用户01'
       }, {
-        value: '000000001',
+        value: '000000002',
         label: '测试用户01'
       }, {
         value: '000000001000000001000000001',
         label: '测试用户01'
       }, {
-        value: '000000001',
+        value: '000000003',
         label: '测试用户01'
       }, {
-        value: '000000001',
+        value: '000000004',
         label: '测试用户01'
       }, {
-        value: '000000001',
+        value: '000000005',
         label: '测试用户01'
       }],
       value6: ''
     }
   },
+
   mounted() {
     this.list = this.states.map(item => {
               return { value: item, label: item };
