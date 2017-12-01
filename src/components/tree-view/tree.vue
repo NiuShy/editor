@@ -134,10 +134,10 @@
       },
       handleSingleSelectItems (oriNode, oriItem) {
         if(this.lastNode){
-          this.lastNode.data.selected = false
+            this.lastNode.model.selected=false;
         }
           oriNode.model.selected = true
-          this.lastNode = oriNode;
+         // this.lastNode = oriNode;
 
         /*this.handleRecursionNodeChilds(this, node => {
           node.model.selected = false

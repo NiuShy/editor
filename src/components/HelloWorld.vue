@@ -44,15 +44,20 @@
       <div   class="head-right">
         <label>Json编辑器</label>
         <el-button-group style="float: right;" class="btns" >
+          <el-tooltip class="item" effect="light" content="新建" placement="top-start">
+            <el-button type="primary" size="small" icon="plus" @click="editFile(1)"></el-button>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="修改" placement="top-start">
+            <el-button type="primary" size="small" icon="edit" @click="editFile(2)"></el-button>
+          </el-tooltip>
           <el-tooltip class="item" effect="light" content="保存" placement="top-start">
             <el-button type="primary" size="small" >
               <i class="fa fa-save"></i>
             </el-button>
           </el-tooltip>
-          <el-tooltip class="item" effect="light" content="保存" placement="top-start">
-            <el-button type="primary" size="small" icon="share"></el-button>
+          <el-tooltip class="item" effect="light" content="删除" placement="top-start">
+            <el-button type="primary" size="small" icon="delete" @click="deleteFile(2)"></el-button>
           </el-tooltip>
-          <el-button type="primary" size="small" icon="delete"></el-button>
         </el-button-group>
 
       </div>
@@ -74,6 +79,7 @@
     <div class="content-head">
       <div   class="head-left"  >
         <el-date-picker
+                class="sys-time"
                 v-model="sysTime"
                 type="datetime"
                 :editable=editable
@@ -94,7 +100,7 @@
             <template scope="scope">
               <el-button size="small" icon="caret-left">发送</el-button>
               <el-button size="small" icon="edit" @click="showEventEdit = true">编辑</el-button>
-              <el-button size="small" type="danger" icon="delete">删除</el-button>
+              <el-button size="small" type="danger" icon="delete" >删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -124,7 +130,6 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
-
       eventJson:JSON.stringify({"event": {"uri": "","data": {}}},null,'\t'),
       showEventEdit:false,
       eventName:"",
@@ -175,6 +180,41 @@ export default {
     });
   },
   methods:{
+    editFile(type) {
+      this.$prompt('请输入文件名', '编辑文件名称', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/,
+        inputErrorMessage: '邮箱格式不正确'
+      }).then(({ value }) => {
+        this.$message({
+        type: 'success',
+        message: '你的邮箱是: ' + value
+      });
+    }).catch(() => {
+        this.$message({
+        type: 'info',
+        message: '取消输入'
+      });
+    });
+    },
+    deleteFile() {
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$message({
+        type: 'success',
+        message: '删除成功!'
+      });
+    }).catch(() => {
+        this.$message({
+        type: 'info',
+        message: '已取消删除'
+      });
+    });
+    },
     packUp(){
       this.isPackUp =!this.isPackUp;
     },
@@ -205,7 +245,6 @@ export default {
       if(!item){
         this_.axios.get(this_.gitUrl)
           .then(function(response) {
-
             var list = response.data.map(function(item){
               item.text = item.name;
               item.icon = "fa fa-folder-o";
@@ -235,13 +274,19 @@ export default {
                   item.opened = true;
                   return item;
                 });
-
                 this_.$set(item,"children",list);
               }else{
                 this_.json = Base64.decode(response.data.content)
+                this_.$set(item,"content",this_.json);
               }
             }
-          });
+            if(this_.$refs.tree.lastNode){
+              this_.$refs.tree.lastNode.model.selected=false;
+            }
+            this_.$refs.tree.lastNode =node;
+          }).catch(function(){
+              this_.$message({type: 'info',message: 'github api 访问超限'});
+           });
 
       }
     }
@@ -358,4 +403,5 @@ export default {
   .version{
     margin-left: 10px;float:right;line-height: 36px;
   }
+  .sys-time input{border: none;cursor: pointer}
 </style>
