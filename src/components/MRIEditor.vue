@@ -130,7 +130,7 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
-      filePath:"",
+      filePath:"/",
       eventJson:JSON.stringify({"event": {"uri": "","data": {}}},null,'\t'),
       showEventEdit:false,
       eventName:"",
@@ -171,7 +171,7 @@ export default {
         value: '000000005',
         label: '测试用户01'
       }],
-      value6: ''
+      value6: '000000005'
     }
   },
 
@@ -182,25 +182,46 @@ export default {
   },
   methods:{
     editFile(type) {
-      this.$prompt('请输入文件名', '编辑文件名称', {
+      var this_ = this;
+      var subTitle=" ";
+      var inputValue="";
+      var title = "编辑";
+
+
+      if(type == 1){
+          title = "新增";
+          subTitle = this_.filePath.substring(0,this_.filePath.lastIndexOf("/")+1);
+      }else{
+          if(this_.filePath ==""||this_.filePath =="/"){
+            this.$message({
+              type: 'warning',
+              message: "请选择一个文件或文件夹"
+            });
+            return ;
+          }
+          subTitle = this_.filePath.substring(0,this_.filePath.lastIndexOf("/")+1);
+          inputValue =  this_.filePath.substring(this_.filePath.lastIndexOf("/")+1)
+      }
+      this.$prompt(subTitle, title, {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/,
-        inputErrorMessage: '邮箱格式不正确'
+        inputPattern: /^[a-zA-Z0-9\._!@#$%^&*~\u4e00-\u9fa5]+$/,
+        inputErrorMessage: '名称格式不正确',
+        inputValue:inputValue
       }).then(({ value }) => {
         this.$message({
-        type: 'success',
-        message: '你的邮箱是: ' + value
-      });
+          type: 'success',
+          message: value
+        });
     }).catch(() => {
         this.$message({
-        type: 'info',
-        message: '取消输入'
-      });
+          type: 'success',
+          message: '取消'
+        });
     });
     },
     deleteFile() {
-      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+      this.$confirm('确定要删除该文件, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -262,7 +283,7 @@ export default {
               alert(e)
           });
       }else{
-        this_.filePath = item.path;
+        this_.filePath ="/"+ item.path+(item.type== "dir"?"/":"");
         this_.axios.get(this_.gitUrl+item.path)
           .then(function(response) {
             if(response.data){
@@ -304,7 +325,7 @@ export default {
 
 <style  >
 .mri-content{
-  height: 700px;
+  height: 550px;
   display: flex;
 }
 .mri-warp .content-head{
