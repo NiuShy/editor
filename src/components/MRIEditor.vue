@@ -42,7 +42,7 @@
         </el-button-group>
       </div>
       <div   class="head-right">
-        <label>Json编辑器</label>
+        <label>{{filePath}}</label>
         <el-button-group style="float: right;" class="btns" >
           <el-tooltip class="item" effect="light" content="新建" placement="top-start">
             <el-button type="primary" size="small" icon="plus" @click="editFile(1)"></el-button>
@@ -130,6 +130,7 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
+      filePath:"",
       eventJson:JSON.stringify({"event": {"uri": "","data": {}}},null,'\t'),
       showEventEdit:false,
       eventName:"",
@@ -261,6 +262,7 @@ export default {
               alert(e)
           });
       }else{
+        this_.filePath = item.path;
         this_.axios.get(this_.gitUrl+item.path)
           .then(function(response) {
             if(response.data){
@@ -276,14 +278,10 @@ export default {
                 });
                 this_.$set(item,"children",list);
               }else{
-                this_.json = Base64.decode(response.data.content)
+                this_.json = Base64.decode(response.data.content);
                 this_.$set(item,"content",this_.json);
               }
             }
-            if(this_.$refs.tree.lastNode){
-              this_.$refs.tree.lastNode.model.selected=false;
-            }
-            this_.$refs.tree.lastNode =node;
           }).catch(function(){
               this_.$message({type: 'info',message: 'github api 访问超限'});
            });

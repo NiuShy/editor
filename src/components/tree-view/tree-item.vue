@@ -79,7 +79,10 @@
       },
       data (newValue) {
         this.model = newValue
-      }
+      },
+        model(newData){
+            this.model = newData;
+        }
       }
     ,
     computed: {

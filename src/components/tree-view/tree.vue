@@ -134,15 +134,11 @@
       },
       handleSingleSelectItems (oriNode, oriItem) {
         if(this.lastNode){
-            this.lastNode.model.selected=false;
+           this.lastNode.model.selected=false;
+           this.lastNode.$el.children[0].classList.remove("tree-wholerow-clicked");
         }
-          oriNode.model.selected = true
-         // this.lastNode = oriNode;
-
-        /*this.handleRecursionNodeChilds(this, node => {
-          node.model.selected = false
-        })*/
-        //oriNode.model.selected = true
+         oriNode.model.selected = true;
+         this.lastNode = oriNode;
       },
       handleBatchSelectItems (oriNode, oriItem) {
         this.handleRecursionNodeChilds(oriNode, node => {
